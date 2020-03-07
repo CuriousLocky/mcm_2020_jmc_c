@@ -109,38 +109,62 @@ import matplotlib.pyplot as plt
 from scipy.signal import savgol_filter
 import scipy.interpolate as interpolate
 for i in range(len(product_list)):
-    temp = []
-    for review in product_list[i].reviews:
-        temp.append(review.star_rating)
-    param = len(temp)//10
+    star_list = gen_star_list(product_list[i].reviews)
+    x, y = smooth_graph()
+
+def gen_star_list(review_list):
+    result = []
+    for review in review_list:
+        result.append(review.star_rating)
+    return result 
+
+def smooth_graph(ori_x, ori_y):
+    result_list = []+ori_y
+    window_size = len(ori_y)//10
     sparse_flag = False
-    if param < 15:
+    if window_size < 15:
         sparse_flag = True
-        param = len(temp)//4
-    if param%2==0:
-        param+=1
+        window_size = len(ori_y)//4
+    if window_size%2==0:
+        window_size+=1
     polyorder = 3
-    if polyorder>=param:
-        polyorder = param-1
+    if polyorder>=window_size:
+        polyorder = window_size-1
     if(polyorder<0):
-        continue
-    print("length of raw: "+str(len(temp)))
-    print("param = " + str(param))
-    print("polyorder = "+str(polyorder))
-    temp = savgol_filter(temp, param, polyorder)
-    temp = savgol_filter(temp, param, polyorder)
-    temp = savgol_filter(temp, param, polyorder)
+        return result_list
+    result_list = savgol_filter(result_list, window_size, polyorder)
+    result_list = savgol_filter(result_list, window_size, polyorder)
+    result_list = savgol_filter(result_list, window_size, polyorder)
 
     if sparse_flag:
-        plt.plot(range(len(temp)), temp, 'bo')
-        t,c,k = interpolate.splrep(range(len(temp)), temp, s=0, k=4)
-        new_x_range = np.linspace(0, len(temp), 3*len(temp))
+        t,c,k = interpolate.splrep(ori_x, result_list, s=0, k=4)
+        new_x_range = np.linspace(min(ori_x), max(ori_x), 3*len(result_list))
         spline = interpolate.BSpline(t, c, k, extrapolate=False)
-        plt.plot(new_x_range, spline(new_x_range), 'r')
-        print("sparse triggered")
+        return (new_x_range,spline(new_x_range))
     # print("length of 3rd smoothing: "+str(len(temp)))
     # temp = savgol_filter(temp, 161, 3)
     # print("length of 4th smoothing: "+str(len(temp)))
-    else:
-        plt.plot(range(len(temp)), temp, alpha=0.6)
-    plt.show()
+    return (ori_x, ori_y)
+
+#test tf-idf
+stop_word_list = []
+with open(".\\stop_words.txt") as fd:
+    for line in fd:
+        stop_word_list.append(line)
+from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer
+import numpy as np
+testlist = []
+for review in product_list[0].reviews:
+    testlist.append(review.review_body)
+
+vectorizer = TfidfVectorizer(stop_words=stop_word_list)
+transformer = TfidfTransformer()
+tfidf = transformer.fit_transform(vectorizer.fit_transform(testlist))
+words = vectorizer.get_feature_names()
+weight = tfidf.toarray()
+n = 5
+
+for w in weight:
+    loc = np.argsort(-w)
+    for i in range(n):
+        print (words[loc[i]], w[loc[i]])
