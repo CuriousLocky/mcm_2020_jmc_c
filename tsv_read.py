@@ -1,6 +1,21 @@
 # prepare:
 #     define Review class
 
+'''
+workflow design
+
+for each category:
+	classify reviews by products
+	sort reviews by date
+	segment reviews
+		generate starring graph
+		smooth starring graph
+		segment the smoothed graph by min, max points
+	for each segment:
+		find key words of each review
+		generate the key words of the whole segment based on priority of the reviews
+'''
+
 import csv
 from datetime import datetime
 # 1st step:
