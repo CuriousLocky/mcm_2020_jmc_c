@@ -145,3 +145,35 @@ def remove_dup_key_word(ori_key_word_lists):
                 key_words_lists[i].remove(delete_word)
 
     return key_words_lists
+
+def smooth_graph(ori_x, ori_y):
+    import numpy as np
+    from scipy.signal import savgol_filter
+    import scipy.interpolate as interpolate
+    result_list = []+ori_y
+    window_size = len(ori_y)//10
+    sparse_flag = False
+    if window_size < 15:
+        sparse_flag = True
+        window_size = len(ori_y)//4
+    if window_size%2==0:
+        window_size+=1
+    polyorder = 3
+    if polyorder>=window_size:
+        polyorder = window_size-1
+    if(polyorder<0):
+        return result_list
+    result_list = savgol_filter(result_list, window_size, polyorder)
+    result_list = savgol_filter(result_list, window_size, polyorder)
+    result_list = savgol_filter(result_list, window_size, polyorder)
+
+    if sparse_flag:
+        t,c,k = interpolate.splrep(ori_x, result_list, s=0, k=4)
+        new_x_range = np.linspace(min(ori_x), max(ori_x), 3*len(result_list))
+        spline = interpolate.BSpline(t, c, k, extrapolate=False)
+        return (new_x_range,spline(new_x_range))
+    # print("length of 3rd smoothing: "+str(len(temp)))
+    # temp = savgol_filter(temp, 161, 3)
+    # print("length of 4th smoothing: "+str(len(temp)))
+    return ([]+ori_x, result_list)
+
