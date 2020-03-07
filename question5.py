@@ -9,14 +9,14 @@ key_words_by_star = []
 for i in range(5):
     review_body_list = [review.review_body for review in star_list[i]]
     priority_list = [review.priority for review in star_list[i]]
-    key_word_dict_list = gen_key_word_dict_list(review_body_list, 5, stop_word_list)
+    key_word_dict_list = gen_key_word_dict_list(review_body_list, 20, stop_word_list)
     combined_dict = combine_key_word_dicts(key_word_dict_list)
     sorted_word_list = gen_sorted_key_word_list(combined_dict)
     key_words_by_star.append(sorted_word_list)
 
+    key_words_by_star = remove_dup_key_word(key_words_by_star)
 
-
-    show_num = min(10, len(sorted_word_list))
-    print("star %d key words:" %(i+1))
-    for i in range(show_num):
-        print("{}\t{}\n".format(sorted_word_list[i][0], sorted_word_list[i][1]))
+for i in range(5):
+    print("\nstar %d :" %(i+1))
+    for k in range(5):
+        print("{}\t{}".format(key_words_by_star[i][k][0], key_words_by_star[i][k][1]))

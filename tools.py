@@ -71,14 +71,15 @@ def read_reviews_from_tsv(file_path):
 
 def load_stop_word_list(file_path='.\\stop_words.txt'):
     from sklearn.feature_extraction import text
+    import re
     stop_word_list = []
     with open(file_path) as fd:
         lines = fd.readlines()
-        for stop_word in lines:
-            stop_word_list.append(stop_word.strip())
-    print(stop_word_list)
+        for line in lines:
+            words = re.split("['\t-]", line.strip())
+            for stop_word in words:
+                stop_word_list.append(stop_word)
     stop_word_list = text.ENGLISH_STOP_WORDS.union(stop_word_list)
-    print(stop_word_list)
     return stop_word_list
 
 def gen_key_word_dict_list(string_list, max_key_words=10, stop_word_list=[]):
@@ -123,3 +124,21 @@ def gen_sorted_key_word_list(key_word_dict):
     result_list = list(key_word_dict.items())
     result_list.sort(reverse=True, key=lambda tup: tup[1])
     return result_list 
+
+def remove_dup_key_word(ori_key_word_lists):
+    key_words_lists = []+ori_key_word_lists
+    for i in range(len(key_words_lists)):
+        i_delete_namelist = []
+        for k in range(i):
+            k_delete_namelist = []
+            for key_word in key_words_lists[i]:
+                for prev_key_word in key_words_lists[k]:
+                    if key_word[0] == prev_key_word[0]:
+                        i_delete_namelist.append(key_word)
+                        k_delete_namelist.append(prev_key_word)
+                        break
+            for delete_word in k_delete_namelist:
+                key_words_lists[k].remove(delete_word)
+        for delete_word in i_delete_namelist:
+            key_words_lists[i].remove(delete_word)
+    return key_words_lists
