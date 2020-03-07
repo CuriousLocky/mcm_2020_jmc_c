@@ -139,6 +139,9 @@ def remove_dup_key_word(ori_key_word_lists):
                         break
             for delete_word in k_delete_namelist:
                 key_words_lists[k].remove(delete_word)
-        for delete_word in i_delete_namelist:
-            key_words_lists[i].remove(delete_word)
+
+        if i == len(key_words_lists)-1:
+            for delete_word in i_delete_namelist:
+                key_words_lists[i].remove(delete_word)
+
     return key_words_lists
